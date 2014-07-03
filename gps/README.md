@@ -70,6 +70,21 @@ be got; but if a thing appears possible we try to do it.
 
 ## Implementation
 
+The object-oriented implementation of the GPS is
+[here](https://github.com/macks22/ai/blob/master/gps/gps.py).
+
+You can find the class diagram for it
+[here](https://github.com/macks22/ai/blob/master/gps/docs/class-diagram.png).
+
+See the [Drive To School Problem](https://github.com/macks22/ai/blob/master/gps/problems/drive_to_school.py)
+for an example of how to formulate a problem. To solve this problem, execute
+these expressions in an interpreter:
+
+    import gps
+    solver = gps.GPS()
+    from problems import drive_to_school
+    solver.solve(drive_to_school.PROBLEM)
+
 ## Limitations of the Intial Approach
 
 ###  Running Around the Block Problem
