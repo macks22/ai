@@ -11,18 +11,18 @@ Aristotle wrote what is perhaps what is perhaps the most elegant formulation of
 the theory of means-ends analysis in the chapter entitled "The nature of
 deliberation and its objects" of the Nicomachean Ethics (Book III.3,1112b):
 
-    We deliberate not about ends, but about means. For a doctor does not
-    deliberate whether he shall heal, nor an orator whether he shall persuade,
-    nor a statesman whether he shall produce law and order, nor does any one
-    else deliberate about his end. They assume the end and consider how and by
-    what means it is attained; and if it seems to be produced by several means
-    they consider by which it is most easily and best produced, while if it is
-    achieved by one only they consider how it will be achieved by this and by
-    what means this will be achieved, till they come to the first cause, which
-    in the order of discovery is last... and what is last in the order of
-    analysis seems to befirst in the order of becoming.  And if we come on an
-    impossibility, we give up the search, e.g., if we need money and this cannot
-    be got; but if a thing appears possible we try to do it.
+> We deliberate not about ends, but about means. For a doctor does not
+deliberate whether he shall heal, nor an orator whether he shall persuade,
+nor a statesman whether he shall produce law and order, nor does any one
+else deliberate about his end. They assume the end and consider how and by
+what means it is attained; and if it seems to be produced by several means
+they consider by which it is most easily and best produced, while if it is
+achieved by one only they consider how it will be achieved by this and by
+what means this will be achieved, till they come to the first cause, which
+in the order of discovery is last... and what is last in the order of
+analysis seems to befirst in the order of becoming.  And if we come on an
+impossibility, we give up the search, e.g., if we need money and this cannot
+be got; but if a thing appears possible we try to do it.
 
 ## Description
 
@@ -37,7 +37,9 @@ deliberation and its objects" of the Nicomachean Ethics (Book III.3,1112b):
     2. or by first solving the subproblem (recursion)
 4.  An action is _appropriate_ to take if it leads us towards our ends.
     1. we will need some description of allowable actions
-    2. each action must be composed of (1) preconditions (2) effects
+    2. each action must be composed of
+        1. preconditions
+        2. effects
 
 ## Specification
 
@@ -61,7 +63,7 @@ deliberation and its objects" of the Nicomachean Ethics (Book III.3,1112b):
 *   Single goal condition can be achieved in two ways:
     1. if it is already the current state (trivial case)
     2. find some appropriate op and try to apply it
-*   Op is_appropriate_ if one of the effects is to add the goal in question to
+*   Op is _appropriate_ if one of the effects is to add the goal in question to
     the current state (appropriate if goal condition in add_list)
 *   An op can be applied if we can achieve all preconditions
     + this may be trivial when the action is something as simple as printing
@@ -76,7 +78,9 @@ What should GPS do if there is no net change resulting from performing an
 action? Perhaps add-list should contain something like "got exercise" or
 "feel tired."
 
-### Clobbered Sibling Goal Problem (Prerequisite Clobbers Sibling Goal)
+### Clobbered Sibling Goal Problem
+
+_aka Prerequisite Clobbers Sibling Goal_
 
 If one goal is achieved and then the next is achieved, the achieving of the
 second goal might wipe out the results of the first. This is a situation the
@@ -120,7 +124,7 @@ When the GPS fails to find a problem, it simply returns NIL, which is fairly
 useless for debugging cases where a solution should have been found. We should
 modify the program to log reasoning output as debug info.
 
-## Modifications to Address Limitations (Version 2)
+## Modifications to Address Limitations (GPSv2)
 
 1.  store local state variable for each individual goal
 2.  all functions take current state and return new/unchanged state
