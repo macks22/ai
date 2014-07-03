@@ -89,7 +89,7 @@ Alternatively, with the CLI:
 
     python solve.py problems/drive_to_school.py
 
-## Limitations of the Intial Approach
+## Limitations of the Initial Approach
 
 ###  Running Around the Block Problem
 
