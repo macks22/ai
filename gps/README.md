@@ -7,9 +7,9 @@ when given a suitable description of the problem.
 ### Means-ends Analysis
 
 The method of problem-solving used by the GPS is means-ends analysis.
-Aristotle wrote what is perhaps what is perhaps the most elegant formulation of
-the theory of means-ends analysis in the chapter entitled "The nature of
-deliberation and its objects" of the Nicomachean Ethics (Book III.3,1112b):
+Aristotle wrote what is perhaps the most elegant formulation of the theory
+of means-ends analysis in the chapter entitled "The nature of deliberation
+and its objects" of the Nicomachean Ethics (Book III.3,1112b):
 
 > We deliberate not about ends, but about means. For a doctor does not
 deliberate whether he shall heal, nor an orator whether he shall persuade,
