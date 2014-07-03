@@ -85,7 +85,7 @@ these expressions in an interpreter:
     from problems import drive_to_school
     solver.solve(drive_to_school.PROBLEM)
 
-Alternatively, with the CLI (solve.py):
+Alternatively, with the CLI:
 
     python solve.py problems/drive_to_school.py
 
