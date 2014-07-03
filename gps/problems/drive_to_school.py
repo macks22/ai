@@ -24,47 +24,47 @@ have_money = Condition('have-money')
 # OPERATIONS
 # =============================================================================
 
-OPS = [
+OPS = (
     Operation(
         'drive-son-to-school',
-        set((son_at_home, car_works)),
-        set((son_at_school,)),
-        set((son_at_home,))
+        (son_at_home, car_works),
+        (son_at_school,),
+        (son_at_home,)
     ),
     Operation(
         'shop-installs-battery',
-        set((car_needs_battery, shop_knows_problem, shop_has_money)),
-        set((car_works,))
+        (car_needs_battery, shop_knows_problem, shop_has_money),
+        (car_works,)
     ),
     Operation(
         'tell-shop-problem',
-        set((in_communication_with_shop,)),
-        set((shop_knows_problem,))
+        (in_communication_with_shop,),
+        (shop_knows_problem,)
     ),
     Operation(
         'telephone-shop',
-        set((know_phone_number,)),
-        set((in_communication_with_shop,))
+        (know_phone_number,),
+        (in_communication_with_shop,)
     ),
     Operation(
         'look-up-number',
-        set((have_phone_book,)),
-        set((know_phone_number,))
+        (have_phone_book,),
+        (know_phone_number,)
     ),
     Operation(
         'give-shop-money',
-        set((have_money,)),
-        set((shop_has_money,)),
-        set((have_money,))
+        (have_money,),
+        (shop_has_money,),
+        (have_money,)
     )
-]
+)
 
 # =============================================================================
 # PROBLEM
 # =============================================================================
 
-GOAL = set((son_at_school,))
+GOAL = (son_at_school,)
 
-STATE = set((son_at_home, car_needs_battery, have_money, have_phone_book))
+STATE = (son_at_home, car_needs_battery, have_money, have_phone_book)
 
 PROBLEM = Problem(GOAL, STATE, OPS)

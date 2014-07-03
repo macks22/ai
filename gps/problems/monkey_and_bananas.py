@@ -26,51 +26,51 @@ hungry = Condition('hungry')
 # OPERATIONS
 # =============================================================================
 
-OPS = set([
+OPS = (
     Operation(
         'climb-on-chair',
-        set((chair_at_middle_room, at_middle_room, on_floor)),
-        set((at_bananas, on_chair)),
-        set((at_middle_room, on_floor))
+        (chair_at_middle_room, at_middle_room, on_floor),
+        (at_bananas, on_chair),
+        (at_middle_room, on_floor)
     ),
     Operation(
         'push-chair-from-door-to-middle-room',
-        set((chair_at_door, at_door)),
-        set((chair_at_middle_room, at_middle_room)),
-        set((chair_at_door, at_door))
+        (chair_at_door, at_door),
+        (chair_at_middle_room, at_middle_room),
+        (chair_at_door, at_door)
     ),
     Operation(
         'walk-from-door-to-middle-room',
-        set((at_door, on_floor)),
-        set((at_middle_room,)),
-        set((at_door,))
+        (at_door, on_floor),
+        (at_middle_room,),
+        (at_door,)
     ),
     Operation(
         'grasp-bananas',
-        set((at_bananas, empty_handed)),
-        set((has_bananas,)),
-        set((empty_handed,))
+        (at_bananas, empty_handed),
+        (has_bananas,),
+        (empty_handed,)
     ),
     Operation(
         'drop-ball',
-        set((has_ball,)),
-        set((empty_handed,)),
-        set((has_ball,))
+        (has_ball,),
+        (empty_handed,),
+        (has_ball,)
     ),
     Operation(
         'eat-bananas',
-        set((has_bananas,)),
-        set((empty_handed, not_hungry)),
-        set((has_bananas, hungry))
+        (has_bananas,),
+        (empty_handed, not_hungry),
+        (has_bananas, hungry)
     )
-])
+)
 
 # =============================================================================
 # PROBLEM
 # =============================================================================
 
-GOAL = set((not_hungry,))
+GOAL = (not_hungry,)
 
-STATE = set((at_door, on_floor, has_ball, hungry, chair_at_door))
+STATE = (at_door, on_floor, has_ball, hungry, chair_at_door)
 
 PROBLEM = Problem(GOAL, STATE, OPS)

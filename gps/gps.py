@@ -31,19 +31,19 @@ class Problem(object):
 
     def __init__(self, goal, state, ops):
         """
-        :type  goal: set of :class:Condition
+        :type  goal: collection of :class:Condition
         :param goal: The set of Conditions we need to achieve in order to say
             that we have solved this problem.
-        :type  state: set of :class:Condition
+        :type  state: collection of :class:Condition
         :param state: The set of conditions that currently stand.
-        :type  ops: set of :class:Operation
+        :type  ops: collection of :class:Operation
         :param ops: The set of allowable operations we can apply in order to
             achieve our goal conditions.
 
         """
-        self.goal = goal
-        self.state = state
-        self.ops = ops
+        self.goal = set(goal)
+        self.state = set(state)
+        self.ops = set(ops)
 
     def __repr__(self):
         rep = ['Goal:']
@@ -61,24 +61,24 @@ class Problem(object):
 class Operation(object):
     """Some means to an end (goal)."""
 
-    def __init__(self, action, preconditions, add_list, del_list=None):
+    def __init__(self, action, preconditions=(), add_list=(), del_list=()):
         """
         :param str action: The action performed by this operation.
-        :type  preconditions: set of :class:Condition
+        :type  preconditions: collection of :class:Condition
         :param preconditions: Set of conditions which must be true in order to
             apply this operation.
-        :type  add_list: set of :class:Condition
+        :type  add_list: collection of :class:Condition
         :param add_list: Set of the conditions that will be added to the
             current state when this operation is applied.
-        :type  del_list: set of :class:Condition
+        :type  del_list: collection of :class:Condition
         :param del_list: Set of the conditions that will be deleted from the
             current state when this operation is applied.
 
         """
         self.action = action
-        self.preconditions = set() if preconditions is None else preconditions
-        self.add_list = set() if add_list is None else add_list
-        self.del_list = set() if del_list is None else del_list
+        self.preconditions = set(preconditions)
+        self.add_list = set(add_list)
+        self.del_list = set(del_list)
 
     def __repr__(self):
         return self.action.upper()
