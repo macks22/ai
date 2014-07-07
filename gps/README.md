@@ -149,6 +149,35 @@ modify the program to log reasoning output as debug info.
 2.  all functions take current state and return new/unchanged state
 3.  can use some marker "start" to disambiguate between valid states that have
     no conditions and failure.
-4.  introduce a goal stack to solve recursive subgoal problem
-    * keep track of goals it is working on; immediately fails if a goal appears
-      as a subgoal of itself.
+
+### Running Around the Block
+
+It doesn't seem that this is a real problem if the action actually has
+consequences (more complex than print statements). Otherwise, logging seems
+sufficient.
+
+### Leaping Before You Look Problem
+
+Separate the planning process from the execution process. Recurse through the
+operators necessary to achieve a goal, then once a complete "solution stack" has
+been found, execute all operators in the stack.
+
+### Recursive Subgoal Problem
+
+Introduce a goal stack to solve recursive subgoal problem
+
+* keep track of goals it is working on; immediately fails if a goal appears
+  as a subgoal of itself.
+* in practice, maintain a goal_stack, where each item in the stack is a set
+  of goal conditions the program is attempting to achieve. If at any point,
+  achieve is called with a set of goals that appears also in the goal_stack,
+  terminate execution
+
+### Lack of Intermediate Information Problem
+
+Log everything using the Python logging module. In particular:
+
+1.  every goal we are trying to achieve
+2.  every operation being considered
+3.  every action taken
+4.  the final sequence of execution
