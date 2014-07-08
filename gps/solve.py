@@ -10,6 +10,7 @@ import argparse
 import logging
 
 import gps
+from problem import Problem
 
 
 class NotModule(Exception):
@@ -53,32 +54,33 @@ def load_instance_from_file(klass, modpath):
 
 
 def import_problem(modpath):
-    """Import the first instance of :class:gps.Problem from the
+    """Import the first instance of :class:Problem from the
     specified module path and return it.
 
-    :rtype:  :class:gps.Problem
+    :rtype:  :class:Problem
     :return: The imported problem.
-    :raise NoProblemFound: If no instance of :class:gps.Problem was found
+    :raise NoProblemFound: If no instance of :class:Problem was found
         in the module specified by modpath.
 
     """
-    problem = load_instance_from_file(gps.Problem, modpath)
+    problem = load_instance_from_file(Problem, modpath)
     if problem is None:
         raise NoProblemFound(
             'No instance of Problem was found in {}'.format(modpath))
 
-    return load_instance_from_file(gps.Problem, modpath)
+    return load_instance_from_file(Problem, modpath)
 
 
-def solve(modpath):
+def solve(modpath, version):
     """Find the problem in the given module and solve it using the GPS.
 
     :param str modpath: Path of the python module with the problem
         specification (instance).
+    :param int version: The version of GPS to use to solve the problem.
 
     """
     problem = import_problem(modpath)
-    solver = gps.GPS()
+    solver = gps.init_gps(version)
     return solver.solve(problem)
 
 
@@ -92,6 +94,10 @@ def setup_parser():
     parser.add_argument(
         '-v', '--verbose', action='store_true',
         help='print verbose output to console')
+    parser.add_argument(
+        '-i', '--implementation', action='store',
+        type=int, default=gps.MAX_VERSION,
+        help='the GPS version to use to solve the problem')
 
     return parser
 
@@ -108,7 +114,7 @@ def main():
     logging.basicConfig(level=log_level)
 
     try:
-        print solve(args.modpath)
+        print solve(args.modpath, args.implementation)
     except (NotModule, NoProblemFound) as err:
         logging.error(str(err))
         return err.status_code

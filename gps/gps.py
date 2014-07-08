@@ -4,6 +4,14 @@ Adapted from ch. 4 of Peter Norvig's "Paradigms of Artificial Intelligence
 Programming."
 
 """
+MAX_VERSION = 2
+
+
+def init_gps(version):
+    if version == 1:
+        return GPS()
+    else:
+        return GPSv2()
 
 
 class GPS(object):
@@ -20,7 +28,7 @@ class GPS(object):
         """
         self.state = problem.state.copy()
         self.ops = problem.ops.copy()
-        return self.achieve_all(problem.goal)
+        return self.achieve_all(problem.goals)
 
     def achieve_all(self, goals):
         """Attempt to achieve each goal in the set of goals.
