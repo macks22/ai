@@ -18,39 +18,39 @@ class GPS(object):
         :param problem: The problem to solve.
 
         """
-        self.state = problem.state
-        self.ops = problem.ops
+        self.state = problem.state.copy()
+        self.ops = problem.ops.copy()
         return self.achieve_all(problem.goal)
 
-    def achieve_all(self, conds):
-        """Attempt to achieve each condition in the set of conditions.
+    def achieve_all(self, goals):
+        """Attempt to achieve each goal in the set of goals.
 
-        :param set conds: The set of conditions to attempt to achieve.
+        :param set goals: The set of goals to attempt to achieve.
         :rtype:  str or None
         :return: "SUCCESS" if the problem is solved, else None.
 
         """
-        for cond in conds:
-            status = self.achieve(cond)
+        for goal in goals:
+            status = self.achieve(goal)
             if not status:
                 return None
 
         return "SUCCESS"
 
     def achieve(self, cond):
-        """Attempt to achieve a particular condition.
+        """Attempt to achieve a particular goal.
 
         :type  cond: :class:Condition
-        :param cond: The condition that we are attempting to achieve.
+        :param cond: The goal that we are attempting to achieve.
         :rtype:  bool
-        :return: True if the condition was achieved, else False.
+        :return: True if the goal was achieved, else False.
 
         """
-        # case 1: base case (condition is in current state)
+        # case 1: base case (goal is in current state)
         if cond in self.state:
             return True
 
-        # case 2: there exists some set of operations to put the condition in
+        # case 2: there exists some set of operations to put the goal in
         # the current state
         for op in self.ops:
             if self.is_appropriate(op, cond):
@@ -90,6 +90,9 @@ class GPSv2(GPS):
 
     version = 2
 
+    def __init__(self):
+        self.reset()
+
     def solve(self, problem):
         """Solve a particular problem using means-ends analysis.
 
@@ -97,30 +100,30 @@ class GPSv2(GPS):
         :param problem: The problem to solve.
 
         """
-        self.problem = problem
+        self.reset()
+        self.state = problem.state.copy()
+        self.ops = problem.ops.copy()
+        self.goals = tuple(problem.goals)
         self.local_state = problem.state.copy()
 
         # we want to represent local states: one for each goal
         # let's use a dictionary because we'll also need a sequence of
         # operations for each goal (how to achieve it).
-        self.solution_history = {}
-
-        for goal in problem.goal:
+        for goal in problem.goals:
             self.solution_history[goal] = {'state': None, 'ops': None}
 
-        return self.achieve_all(problem.goal)
+        return self.achieve_all()
 
-    @property
-    def state(self):
-        return self.problem.state
+    def reset(self):
+        """Reset all local state variables to prepare for a new problem. These
+        are kept around between problems in case one might want to inspect them.
+        This is called at the beginning of a call to 'solve'.
 
-    @property
-    def ops(self):
-        return self.problem.ops
-
-    @property
-    def goals(self):
-        return self.problem.goals
+        """
+        self.local_state = None
+        self.local_ops = []
+        self.solution_history = {}
+        self.problem = None
 
     def achieve_all(self):
         """Attempt to achieve all goals for the current problem.
@@ -151,7 +154,7 @@ class GPSv2(GPS):
         its state as the current value of 'local_state'.
 
         :type  goal: :class:Condition
-        :param goal: The goal condition to update solution history for.
+        :param goal: The goal to update solution history for.
 
         """
         goal_history = self.solution_history[goal]
@@ -168,7 +171,7 @@ class GPSv2(GPS):
         """Check to see if this goal clobbers previously achieved goals.
 
         :type  goal: :class:Condition
-        :param goal: The goal condition to check.
+        :param goal: The goal to check.
 
         """
         current_goal_index = self.goals.index(goal)
@@ -222,9 +225,7 @@ class GPSv2(GPS):
             self.local_ops.append(op)  # track necessary ops for solution
 
     def apply_op(self, op):
-        """Apply a particular operation by adding all conditions in its
-        add-list and removing all in its delete-list. Simply change the
-        state and execute the action.
+        """Execute the operation, altering the current state.
 
         :type  op: :class:Operation
         :param op: The operation to apply.

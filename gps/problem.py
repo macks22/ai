@@ -33,10 +33,10 @@ class Condition(object):
 class Problem(object):
     """A problem which can be solved by the GPS."""
 
-    def __init__(self, goal, state, ops, name='unnamed'):
+    def __init__(self, goals, state, ops, name='unnamed'):
         """
-        :type  goal: ordered collection of :class:Condition
-        :param goal: The set of Conditions we need to achieve in order to say
+        :type  goals: ordered collection of :class:Condition
+        :param goals: The set of Conditions we need to achieve in order to say
             that we have solved this problem.
         :type  state: collection of :class:Condition
         :param state: The set of conditions that currently stand.
@@ -45,7 +45,7 @@ class Problem(object):
             achieve our goal conditions.
 
         """
-        self.goal = goal
+        self.goals = goals
         self.state = set(state)
         self.ops = set(ops)
         self.name = name
@@ -54,7 +54,7 @@ class Problem(object):
         header = '{} PROBLEM'.format(self.name.upper())
         rep = [header, '-' * len(header)]
         rep.append('\nGoal:')
-        rep += ['    {}'.format(cond) for cond in self.goal]
+        rep += ['    {}'.format(cond) for cond in self.goals]
         rep.append('\nState:')
         rep += ['    {}'.format(cond) for cond in self.state]
         rep.append('\nAllowable Operations:')
@@ -123,4 +123,4 @@ class Operation(object):
 
         """
         state.difference_update(self.del_list)
-        state.union(self.add_list)
+        state.update(self.add_list)
