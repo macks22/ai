@@ -2,7 +2,7 @@
 The knowledge domain for the "Monkey and Bananas" problem.
 
 """
-from gps import Condition, Operation, Problem
+from problem import Condition, Operation, Problem
 
 
 # =============================================================================

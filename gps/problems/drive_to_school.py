@@ -2,7 +2,7 @@
 The knowledge domain for the "Driving to School" problem.
 
 """
-from gps import Condition, Operation, Problem
+from problem import Condition, Operation, Problem
 
 
 # =============================================================================
@@ -68,3 +68,7 @@ GOAL = (son_at_school,)
 STATE = (son_at_home, car_needs_battery, have_money, have_phone_book)
 
 PROBLEM = Problem(GOAL, STATE, OPS)
+
+LBYL_PROBLEM = Problem((son_at_school, have_money), STATE, OPS)
+
+CLOBBERING_PROBLEM = Problem((have_money, son_at_school), STATE, OPS)

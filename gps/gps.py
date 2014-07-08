@@ -6,89 +6,10 @@ Programming."
 """
 
 
-class Condition(object):
-    """Represent a condition: some information about the world."""
-
-    def __init__(self, name):
-        """
-        :param str name: The unique name of the condition.
-
-        """
-        self.name = name
-
-    def __eq__(self, other_condition):
-        return self.name == other_condition.name
-
-    def __repr__(self):
-        return self.name.upper()
-
-    def __str__(self):
-        return repr(self)
-
-
-class Problem(object):
-    """A problem which can be solved by the GPS."""
-
-    def __init__(self, goal, state, ops):
-        """
-        :type  goal: collection of :class:Condition
-        :param goal: The set of Conditions we need to achieve in order to say
-            that we have solved this problem.
-        :type  state: collection of :class:Condition
-        :param state: The set of conditions that currently stand.
-        :type  ops: collection of :class:Operation
-        :param ops: The set of allowable operations we can apply in order to
-            achieve our goal conditions.
-
-        """
-        self.goal = set(goal)
-        self.state = set(state)
-        self.ops = set(ops)
-
-    def __repr__(self):
-        rep = ['Goal:']
-        rep += ['    {}'.format(cond) for cond in self.goal]
-        rep.append('\nState:')
-        rep += ['    {}'.format(cond) for cond in self.state]
-        rep.append('\nAllowable Operations:')
-        rep += ['    {}'.format(op) for op in self.ops]
-        return '\n'.join(rep)
-
-    def __str__(self):
-        return repr(self)
-
-
-class Operation(object):
-    """Some means to an end (goal)."""
-
-    def __init__(self, action, preconditions=(), add_list=(), del_list=()):
-        """
-        :param str action: The action performed by this operation.
-        :type  preconditions: collection of :class:Condition
-        :param preconditions: Set of conditions which must be true in order to
-            apply this operation.
-        :type  add_list: collection of :class:Condition
-        :param add_list: Set of the conditions that will be added to the
-            current state when this operation is applied.
-        :type  del_list: collection of :class:Condition
-        :param del_list: Set of the conditions that will be deleted from the
-            current state when this operation is applied.
-
-        """
-        self.action = action
-        self.preconditions = set(preconditions)
-        self.add_list = set(add_list)
-        self.del_list = set(del_list)
-
-    def __repr__(self):
-        return self.action.upper()
-
-    def __str__(self):
-        return repr(self)
-
-
 class GPS(object):
     """The general problem solver."""
+
+    version = 1
 
     def solve(self, problem):
         """Solve a particular problem using means-ends analysis.
@@ -138,7 +59,6 @@ class GPS(object):
 
         return False
 
-
     def apply_op(self, op):
         """Apply a particular operation by adding all conditions in its
         add-list and removing all in its delete-list.
@@ -148,9 +68,7 @@ class GPS(object):
 
         """
         if (all(map(self.achieve, op.preconditions))):
-            print 'Executing ' + op.action
-            self.state.difference_update(op.del_list)
-            self.state.union(op.add_list)
+            op.execute(self.state)
 
     def is_appropriate(self, op, goal):
         """Evaluate if a particular operation is appropriate for solving some
@@ -165,3 +83,151 @@ class GPS(object):
 
         """
         return goal in op.add_list
+
+
+class GPSv2(GPS):
+    """The second version of the general problem solver."""
+
+    version = 2
+
+    def solve(self, problem):
+        """Solve a particular problem using means-ends analysis.
+
+        :type  problem: :class:Problem
+        :param problem: The problem to solve.
+
+        """
+        self.problem = problem
+        self.local_state = problem.state.copy()
+
+        # we want to represent local states: one for each goal
+        # let's use a dictionary because we'll also need a sequence of
+        # operations for each goal (how to achieve it).
+        self.solution_history = {}
+
+        for goal in problem.goal:
+            self.solution_history[goal] = {'state': None, 'ops': None}
+
+        return self.achieve_all(problem.goal)
+
+    @property
+    def state(self):
+        return self.problem.state
+
+    @property
+    def ops(self):
+        return self.problem.ops
+
+    @property
+    def goals(self):
+        return self.problem.goals
+
+    def achieve_all(self):
+        """Attempt to achieve all goals for the current problem.
+
+        :rtype:  str
+        :return: "SUCCESS" if the problem is solved, else "FAILURE".
+
+        """
+        for goal in self.goals:
+            if not self.achieve(goal):
+                return "FAILURE"
+
+            # goal was achieved, store local state and ops, reset local ops
+            self.update_solution_history(goal)
+
+            # make sure any previously achieved goals were not clobbered
+            if self.clobbers_previous_goals(goal):
+                return "FAILURE"  # problem solution failed (sibling clobbered)
+
+        # if we got this far, we have a working solution, so we can now apply
+        # all the necessary operators to the initial state
+        self.apply_solution()
+        return "SUCCESS"
+
+    def update_solution_history(self, goal):
+        """Update the solution history for the given goal by storing its
+        solution as the current value of the instance variable 'local_ops' and
+        its state as the current value of 'local_state'.
+
+        :type  goal: :class:Condition
+        :param goal: The goal condition to update solution history for.
+
+        """
+        goal_history = self.solution_history[goal]
+        goal_history['ops'] = self.local_ops
+        goal_history['state'] = self.local_state
+        self.local_ops = []  # reset local ops list
+
+    def apply_solution(self):
+        """Apply all operators in the solution history to solve the problem."""
+        for goal in self.goals:
+            map(self.apply_op, self.solution_history[goal]['ops'])
+
+    def clobbers_previous_goals(self, goal):
+        """Check to see if this goal clobbers previously achieved goals.
+
+        :type  goal: :class:Condition
+        :param goal: The goal condition to check.
+
+        """
+        current_goal_index = self.goals.index(goal)
+        for previous_goal in self.goals[:current_goal_index]:
+            # check for membership in this goal's solution state
+            if previous_goal not in self.solution_history[goal]['state']:
+                return True  # problem solution failed (sibling clobbered)
+
+        return False
+
+    def achieve(self, goal):
+        """Attempt to achieve a particular goal.
+
+        :type  goal: :class:Condition
+        :param goal: The goal that we are attempting to achieve.
+        :rtype:  bool
+        :return: True if the goal was achieved, else False.
+
+        """
+        # case 1: base case (goal condition is in current state)
+        if goal in self.local_state:
+            return True
+
+        # we need to return the sequence of operators in the opposite order from
+        # that in which they are considered: because we start with the final
+        # operation and end with the operation that satisfies the last
+        # precondition
+        #   --> this should be done in test_op
+
+        # case 2: there exists some set of operations to put the goal condition
+        # in the current state
+        for op in self.ops:
+            if self.is_appropriate(op, goal):
+                self.test_op(op)
+                return True
+
+        return False
+
+    def test_op(self, op):
+        """Apply a particular operation by adding all conditions in its
+        add-list and removing all in its delete-list. Only modify the
+        local state -- that's what makes it a test. Will also need to
+        ensure all preconditions can be achieved.
+
+        :type  op: :class:Operation
+        :param op: The operation to apply.
+
+        """
+        if (all(map(self.achieve, op.preconditions))):
+            op.simulate(self.local_state)  # alter state but don't execute
+            self.local_ops.append(op)  # track necessary ops for solution
+
+    def apply_op(self, op):
+        """Apply a particular operation by adding all conditions in its
+        add-list and removing all in its delete-list. Simply change the
+        state and execute the action.
+
+        :type  op: :class:Operation
+        :param op: The operation to apply.
+
+        """
+        op.execute(self.state)
