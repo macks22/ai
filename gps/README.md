@@ -127,15 +127,22 @@ subproblem being evaluated.
 Can have situations which end up leading to infinite oscillation between a means
 and an end. For instance:
 
-    end: shop-knows-problem
-    means: in-communication-with-shop
-    precondition: know-phone-number
+    goal: shop-knows-problem
+    state: () # no conditions in start state
+    ops:
 
-    end: know-phone-number
-    means: in-communication-with-shop
+        end: shop-knows-problem
+        means: in-communication-with-shop
+        
+        end: in-communicate-with-shop
+        means: know-phone-number
+    
+        end: know-phone-number
+        means: in-communication-with-shop
 
 One way to solve the problem is to keep a list of operations and detect loops in
-the inference process.
+the inference process. More specifically, maintain a stack of goals, and if at
+any point we try to solve a goal which is already in the stack, terminate.
 
 ### Lack of Intermediate Information Problem
 
@@ -145,16 +152,27 @@ modify the program to log reasoning output as debug info.
 
 ## Modifications to Address Limitations (GPSv2)
 
-1.  store local state variable for each individual goal
-2.  all functions take current state and return new/unchanged state
-3.  can use some marker "start" to disambiguate between valid states that have
-    no conditions and failure.
-
 ### Running Around the Block
 
-It doesn't seem that this is a real problem if the action actually has
+At first, it doesn't seem that this is a real problem if the action actually has
 consequences (more complex than print statements). Otherwise, logging seems
-sufficient.
+sufficient. However, the problem arises when we try to express the problem. What
+do we put in the goal list? The start state and end state really don't need to
+change, so how do we indicate to the GPS what sequence of actions it needs to
+perform?
+
+One solution is we can simply express the goal as "ran-around-the-block". This
+may not be the most satisfying solution, but it does allow us to pose the
+problem to the GPS, which is what we want.
+
+### Clobbered Sibling Goal Problem
+
+Maintain a local state variable as well as an initial state. For each goal in the
+set of goals to solve for the problem, achieve the goal by modifying the local
+state and maintain a list of operators used. When the goal is achieved, store
+both the state and the list of operators used to achieve the goal. For each
+goal achieved after the first, avoid clobbering by checking to see if
+_all_ previous goals are in the return state of the current goal.
 
 ### Leaping Before You Look Problem
 
