@@ -24,7 +24,7 @@ have_money = Condition('have-money')
 # OPERATIONS
 # =============================================================================
 
-OPS = (
+_OPS = (
     Operation(
         'drive-son-to-school',
         (son_at_home, car_works),
@@ -63,12 +63,43 @@ OPS = (
 # PROBLEM
 # =============================================================================
 
-GOAL = (son_at_school,)
+_GOAL = (son_at_school,)
 
-STATE = (son_at_home, car_needs_battery, have_money, have_phone_book)
+_STATE = (son_at_home, car_needs_battery, have_money, have_phone_book)
 
-PROBLEM = Problem(GOAL, STATE, OPS)
+PROBLEM = Problem(_GOAL, _STATE, _OPS, 'drive-son-to-school')
 
-LBYL_PROBLEM = Problem((son_at_school, have_money), STATE, OPS)
+# =============================================================================
+# PROBLEMS THAT EXPOSE LIMITATIONS OF V1
+# =============================================================================
 
-CLOBBERING_PROBLEM = Problem((have_money, son_at_school), STATE, OPS)
+LBYL_PROBLEM = Problem((son_at_school, have_money), _STATE, _OPS,
+    'look-before-you-leap')
+
+CLOBBERING_PROBLEM = Problem((have_money, son_at_school), _STATE, _OPS,
+    'prerequisite-clobbers-sibling-goal')
+
+"""
+Danger of infinite oscillation between 'get-phone-number' and 'call-shop'.
+
+"""
+_RECURSIVE_OPS = (
+    Operation(
+        'tell-shop-problem',
+        preconditions=(in_communication_with_shop,),
+        add_list=(shop_knows_problem,)
+    ),
+    Operation(
+        'get-phone-number',
+        preconditions=(in_communication_with_shop,),
+        add_list=(know_phone_number,)
+    ),
+    Operation(
+        'call-shop',
+        preconditions=(know_phone_number,),
+        add_list=(in_communication_with_shop,)
+    )
+)
+
+RECURSIVE_SUBGOAL_PROBLEM = Problem((shop_knows_problem,), (), _RECURSIVE_OPS,
+    'recursive-subgoal')

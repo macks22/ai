@@ -73,4 +73,4 @@ GOAL = (not_hungry,)
 
 STATE = (at_door, on_floor, has_ball, hungry, chair_at_door)
 
-PROBLEM = Problem(GOAL, STATE, OPS)
+PROBLEM = Problem(GOAL, STATE, OPS, 'monkey-and-banana')
