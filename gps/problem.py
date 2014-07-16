@@ -93,6 +93,15 @@ class Operation(object):
     def __str__(self):
         return repr(self)
 
+    def achieves(self, goal):
+        """Determine if the operation will achieve a particular goal.
+
+        :type  goal: :class:`.Condition`
+        :param goal: The goal to check.
+
+        """
+        return goal in self.add_list
+
     def simulate(self, state):
         """Simulate an execution of the operation. In other words, apply the
         operation to the state of the executor but don't actually perform the

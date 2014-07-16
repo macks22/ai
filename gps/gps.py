@@ -143,7 +143,7 @@ class GPSv1(GPS):
 
 
 class GPSv2(GPS):
-    """The second version of the general problem solver."""
+    """Version 2 general problem solver."""
 
     version = 2
 
@@ -180,6 +180,7 @@ class GPSv2(GPS):
         self.local_state = None
         self.local_ops = []
         self.solution_history = {}
+        self.goal_stack = set()
         self.problem = None
 
     def achieve_all(self):
@@ -248,38 +249,48 @@ class GPSv2(GPS):
         :return: True if the goal was achieved, else False.
 
         """
+        print 'Attempting to achieve goal: {}'.format(goal)
+        print 'Current local state: {}'.format(self.local_state)
+
         # case 1: base case (goal condition is in current state)
         if goal in self.local_state:
             return True
-
-        # we need to return the sequence of operators in the opposite order from
-        # that in which they are considered: because we start with the final
-        # operation and end with the operation that satisfies the last
-        # precondition
-        #   --> done in `test_op`
+        elif goal in self.goal_stack:  # entering infinite recursion
+            print 'Found recursive goal: {}'.format(goal)
+            return False
+        else:  # track goal to avoid infinite recursion
+            self.goal_stack.add(goal)
 
         # case 2: there exists some set of operations to put the goal condition
         # in the current state
-        for op in self.ops:
-            if self.is_appropriate(op, goal):
-                self.test_op(op)
+        appropriate_ops = [op for op in self.ops if op.achieves(goal)]
+        for op in appropriate_ops:
+            if self.simulate_op(op):
+                self.goal_stack.remove(goal)
                 return True
 
+        # case 3: no appropriate set of operations exists to achieve this goal
         return False
 
-    def test_op(self, op):
-        """Apply a particular operation by adding all conditions in its
-        add-list and removing all in its delete-list. Only modify the
-        local state -- that's what makes it a test. Will also need to
-        ensure all preconditions can be achieved.
+    def simulate_op(self, op):
+        """Apply a particular operation by adding all conditions in its add-list
+        and removing all in its delete-list. Only modify the local state -
+        that's what makes it a simulation. First ensure all preconditions can be
+        achieved.
 
         :type  op: :class:`problem.Operation`
         :param op: The operation to apply.
 
         """
+        print 'Considering operation: {}'.format(op)
         if (all(map(self.achieve, op.preconditions))):
+            print 'Simulating operation: {}'.format(op)
             op.simulate(self.local_state)  # alter state but don't execute
             self.local_ops.append(op)  # track necessary ops for solution
+            return True
+
+        print 'Could not meet preconditions for: {}'.format(op)
+        return False
 
     def apply_op(self, op):
         """Execute the operation, altering the current state.
