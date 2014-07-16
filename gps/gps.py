@@ -9,20 +9,83 @@ MAX_VERSION = 2
 
 def init_gps(version):
     if version == 1:
-        return GPS()
-    else:
+        return GPSv1()
+    elif version == 2:
         return GPSv2()
+    else:
+        raise NotImplementedError(
+            'Version {} GPS has not been implemented.'.format(version))
 
 
 class GPS(object):
-    """The general problem solver."""
+    """Template class for the general problem solver."""
+
+    version = 0
+
+    def solve(self, problem):
+        """Solve a particular problem using means-ends analysis.
+
+        :type  problem: :class:`problem.Problem`
+        :param problem: The problem to solve.
+
+        """
+        raise NotImplementedError('Subclasses should override this method.')
+
+    def achieve_all(self, goals):
+        """Attempt to achieve each goal in the set of goals.
+
+        :param set goals: The set of goals to attempt to achieve.
+        :rtype:  str or None
+        :return: "SUCCESS" if the problem is solved, else None.
+
+        """
+        raise NotImplementedError('Subclasses should override this method.')
+
+    def achieve(self, goal):
+        """Attempt to achieve a particular goal.
+
+        :type  goal: :class:`problem.Condition`
+        :param goal: The goal that we are attempting to achieve.
+        :rtype:  bool
+        :return: True if the goal was achieved, else False.
+
+        """
+        raise NotImplementedError('Subclasses should override this method.')
+
+    def apply_op(self, op):
+        """Apply a particular operation by adding all conditions in its
+        add-list and removing all in its delete-list.
+
+        :type  op: :class:`problem.Operation`
+        :param op: The operation to apply.
+
+        """
+        raise NotImplementedError('Subclasses should override this method.')
+
+    def is_appropriate(self, op, goal):
+        """Evaluate if a particular operation is appropriate for solving some
+        goal.
+
+        :type  op: :class:`problem.Operation`
+        :param op: The operation to apply.
+        :type  goal: :class:`problem.Condition`
+        :param goal: The goal we are trying to achieve by applying the op.
+        :rtype:  bool
+        :return: True if the op is appropriate, else False.
+
+        """
+        return goal in op.add_list
+
+
+class GPSv1(GPS):
+    """Version 1 general problem solver."""
 
     version = 1
 
     def solve(self, problem):
         """Solve a particular problem using means-ends analysis.
 
-        :type  problem: :class:Problem
+        :type  problem: :class:`problem.Problem`
         :param problem: The problem to solve.
 
         """
@@ -45,23 +108,23 @@ class GPS(object):
 
         return "SUCCESS"
 
-    def achieve(self, cond):
+    def achieve(self, goal):
         """Attempt to achieve a particular goal.
 
-        :type  cond: :class:Condition
-        :param cond: The goal that we are attempting to achieve.
+        :type  goal: :class:`problem.Condition`
+        :param goal: The goal that we are attempting to achieve.
         :rtype:  bool
         :return: True if the goal was achieved, else False.
 
         """
         # case 1: base case (goal is in current state)
-        if cond in self.state:
+        if goal in self.state:
             return True
 
         # case 2: there exists some set of operations to put the goal in
         # the current state
         for op in self.ops:
-            if self.is_appropriate(op, cond):
+            if self.is_appropriate(op, goal):
                 self.apply_op(op)
                 return True
 
@@ -71,26 +134,12 @@ class GPS(object):
         """Apply a particular operation by adding all conditions in its
         add-list and removing all in its delete-list.
 
-        :type  op: :class:Operation
+        :type  op: :class:`problem.Operation`
         :param op: The operation to apply.
 
         """
         if (all(map(self.achieve, op.preconditions))):
             op.execute(self.state)
-
-    def is_appropriate(self, op, goal):
-        """Evaluate if a particular operation is appropriate for solving some
-        goal.
-
-        :type  op: :class:Operation
-        :param op: The operation to apply.
-        :type  goal: :class:Condition
-        :param goal: The goal we are trying to achieve by applying the op.
-        :rtype:  bool
-        :return: True if the op is appropriate, else False.
-
-        """
-        return goal in op.add_list
 
 
 class GPSv2(GPS):
@@ -104,7 +153,7 @@ class GPSv2(GPS):
     def solve(self, problem):
         """Solve a particular problem using means-ends analysis.
 
-        :type  problem: :class:Problem
+        :type  problem: :class:`problem.Problem`
         :param problem: The problem to solve.
 
         """
@@ -125,7 +174,7 @@ class GPSv2(GPS):
     def reset(self):
         """Reset all local state variables to prepare for a new problem. These
         are kept around between problems in case one might want to inspect them.
-        This is called at the beginning of a call to 'solve'.
+        This is called at the beginning of a call to :func:`solve`.
 
         """
         self.local_state = None
@@ -161,7 +210,7 @@ class GPSv2(GPS):
         solution as the current value of the instance variable 'local_ops' and
         its state as the current value of 'local_state'.
 
-        :type  goal: :class:Condition
+        :type  goal: :class:`problem.Condition`
         :param goal: The goal to update solution history for.
 
         """
@@ -178,7 +227,7 @@ class GPSv2(GPS):
     def clobbers_previous_goals(self, goal):
         """Check to see if this goal clobbers previously achieved goals.
 
-        :type  goal: :class:Condition
+        :type  goal: :class:`problem.Condition`
         :param goal: The goal to check.
 
         """
@@ -193,7 +242,7 @@ class GPSv2(GPS):
     def achieve(self, goal):
         """Attempt to achieve a particular goal.
 
-        :type  goal: :class:Condition
+        :type  goal: :class:`problem.Condition`
         :param goal: The goal that we are attempting to achieve.
         :rtype:  bool
         :return: True if the goal was achieved, else False.
@@ -207,7 +256,7 @@ class GPSv2(GPS):
         # that in which they are considered: because we start with the final
         # operation and end with the operation that satisfies the last
         # precondition
-        #   --> this should be done in test_op
+        #   --> done in `test_op`
 
         # case 2: there exists some set of operations to put the goal condition
         # in the current state
@@ -224,7 +273,7 @@ class GPSv2(GPS):
         local state -- that's what makes it a test. Will also need to
         ensure all preconditions can be achieved.
 
-        :type  op: :class:Operation
+        :type  op: :class:`problem.Operation`
         :param op: The operation to apply.
 
         """
@@ -235,7 +284,7 @@ class GPSv2(GPS):
     def apply_op(self, op):
         """Execute the operation, altering the current state.
 
-        :type  op: :class:Operation
+        :type  op: :class:`problem.Operation`
         :param op: The operation to apply.
 
         """
